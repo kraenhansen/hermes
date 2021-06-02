@@ -60,6 +60,18 @@ class FileBuffer : public jsi::Buffer {
   std::unique_ptr<llvh::MemoryBuffer> buffer_;
 };
 
+void register_globals(jsi::Runtime& runtime) {
+  auto name = jsi::PropNameID::forUtf8(runtime, "Whatever");
+  auto body = [](jsi::Runtime& rt, const jsi::Value& thisVal, const jsi::Value* args, size_t count) {
+    auto thisObj = jsi::Value(rt, thisVal).asObject(rt);
+    thisObj.setProperty(rt, "prop", "what!");
+    return thisObj;
+  };
+  auto function = jsi::Function::createFromHostFunction(runtime, name, 1, body);
+  // Register the function as a global
+  runtime.global().setProperty(runtime, name, function);
+}
+
 int main(int argc, char **argv) {
   // Normalize the arg vector.
   llvh::InitLLVM initLLVM(argc, argv);
@@ -93,6 +105,8 @@ int main(int argc, char **argv) {
                                      : std::string(InputFilename);
 
   auto runtime = facebook::hermes::makeHermesRuntime();
+
+  register_globals(*runtime);
 
   try {
     auto js = runtime->prepareJavaScript(jsiBuffer, srcPath);
