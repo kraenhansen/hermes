@@ -515,7 +515,7 @@ class NapiStableAddressStack final {
  private:
   // The size of 64 entries per chunk is arbitrary at this point.
   // It can be adjusted depending on perf data.
-  static const size_t ChunkSize = 64;
+  inline static const size_t ChunkSize = 64;
 
   llvh::SmallVector<std::unique_ptr<T[]>, ChunkSize> storage_;
   size_t size_{0};
@@ -7782,7 +7782,7 @@ napi_status NAPI_CDECL napi_object_seal(napi_env env, napi_value object) {
 // Hermes specific API
 //=============================================================================
 
-napi_status hermes_create_napi_env(
+NAPI_EXTERN napi_status hermes_create_napi_env(
     ::hermes::vm::Runtime &runtime,
     bool isInspectable,
     std::shared_ptr<facebook::jsi::PreparedScriptStore> preparedScript,
