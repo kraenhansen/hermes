@@ -70,8 +70,6 @@ add_subdirectory(cdp)
 # against the internal functionality they need.
 set(api_sources
   hermes.cpp
-  hermes_napi.cpp
-  MurmurHash.cpp
   DebuggerAPI.cpp
   AsyncDebuggerAPI.cpp
   RuntimeTaskRunner.cpp
