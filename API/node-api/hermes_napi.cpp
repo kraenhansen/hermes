@@ -70,12 +70,10 @@
 
 #include "MurmurHash.h"
 #include "ScriptStore.h"
-#include "hermes_api.h"
+#include "js_native_api.h"
 
 #include "hermes/BCGen/HBC/BytecodeProviderFromSrc.h"
 #include "hermes/DebuggerAPI.h"
-#include "hermes/SourceMap/SourceMapParser.h"
-#include "hermes/Support/SimpleDiagHandler.h"
 #include "hermes/VM/Callable.h"
 #include "hermes/VM/HostModel.h"
 #include "hermes/VM/JSArray.h"
@@ -83,7 +81,6 @@
 #include "hermes/VM/JSDataView.h"
 #include "hermes/VM/JSDate.h"
 #include "hermes/VM/JSError.h"
-#include "hermes/VM/JSProxy.h"
 #include "hermes/VM/JSTypedArray.h"
 #include "hermes/VM/PropertyAccessor.h"
 #include "hermes/VM/Runtime.h"
@@ -92,7 +89,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <unordered_map>
 
 //=============================================================================
 // Macros
@@ -200,6 +196,7 @@ namespace hermes {
 namespace napi {
 
 typedef struct prepared_script_s* prepared_script;
+typedef void(NAPI_CDECL* data_delete_cb)(void* data, void* deleter_data);
 
 union HermesBuildVersionInfo {
   struct {
