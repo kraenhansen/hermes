@@ -199,6 +199,8 @@ extern "C" __declspec(dllimport) void __stdcall DebugBreak();
 namespace hermes {
 namespace napi {
 
+typedef struct prepared_script_s* prepared_script;
+
 union HermesBuildVersionInfo {
   struct {
     uint16_t major;
@@ -1617,7 +1619,7 @@ class NapiEnvironment final {
   //---------------------------------------------------------------------------
   // Script running
   //---------------------------------------------------------------------------
-
+ public:
   // Exported function to run script from a string value.
   // The sourceURL is used only for error reporting.
   napi_status runScript(
@@ -1625,18 +1627,19 @@ class NapiEnvironment final {
       const char *sourceURL,
       napi_value *result) noexcept;
 
+ private:
   napi_status createPreparedScript(
       const uint8_t *scriptData,
       size_t scriptLength,
-      jsr_data_delete_cb scriptDeleteCallback,
+      data_delete_cb scriptDeleteCallback,
       void *deleterData,
       const char *sourceURL,
-      jsr_prepared_script *result) noexcept;
+      prepared_script *result) noexcept;
 
-  napi_status deletePreparedScript(jsr_prepared_script preparedScript) noexcept;
+  napi_status deletePreparedScript(prepared_script preparedScript) noexcept;
 
   napi_status runPreparedScript(
-      jsr_prepared_script preparedScript,
+      prepared_script preparedScript,
       napi_value *result) noexcept;
 
   // Internal function to check if buffer contains Hermes VM bytecode.
@@ -2935,7 +2938,7 @@ class ScriptDataBuffer final : public hermes::Buffer {
   ScriptDataBuffer(
       const uint8_t *scriptData,
       size_t scriptLength,
-      jsr_data_delete_cb scriptDeleteCallback,
+      data_delete_cb scriptDeleteCallback,
       void *deleterData) noexcept
       : Buffer(scriptData, scriptLength),
         scriptDeleteCallback_(scriptDeleteCallback),
@@ -2951,7 +2954,7 @@ class ScriptDataBuffer final : public hermes::Buffer {
   ScriptDataBuffer &operator=(const ScriptDataBuffer &) = delete;
 
  private:
-  jsr_data_delete_cb scriptDeleteCallback_{};
+  data_delete_cb scriptDeleteCallback_{};
   void *deleterData_{};
 };
 
@@ -6505,7 +6508,7 @@ napi_status NapiEnvironment::runScript(
       std::unique_ptr<char[]>(new char[sourceSize + 1]);
   CHECK_NAPI(getStringValueUTF8(source, buffer.get(), sourceSize + 1, nullptr));
 
-  jsr_prepared_script preparedScript{};
+  prepared_script preparedScript{};
   CHECK_NAPI(createPreparedScript(
       reinterpret_cast<uint8_t *>(buffer.release()),
       sourceSize,
@@ -6524,10 +6527,10 @@ napi_status NapiEnvironment::runScript(
 napi_status NapiEnvironment::createPreparedScript(
     const uint8_t *scriptData,
     size_t scriptLength,
-    jsr_data_delete_cb scriptDeleteCallback,
+    data_delete_cb scriptDeleteCallback,
     void *deleterData,
     const char *sourceURL,
-    jsr_prepared_script *result) noexcept {
+    prepared_script *result) noexcept {
   std::unique_ptr<ScriptDataBuffer> buffer = std::make_unique<ScriptDataBuffer>(
       scriptData, scriptLength, scriptDeleteCallback, deleterData);
 
@@ -6632,7 +6635,7 @@ napi_status NapiEnvironment::createPreparedScript(
 #if !defined(HERMESVM_LEAN)
 CannotSerialize:
 #endif
-  *result = reinterpret_cast<jsr_prepared_script>(new NapiScriptModel(
+  *result = reinterpret_cast<prepared_script>(new NapiScriptModel(
       std::move(bcErr.first),
       runtimeFlags,
       sourceURL ? sourceURL : "",
@@ -6641,14 +6644,14 @@ CannotSerialize:
 }
 
 napi_status NapiEnvironment::deletePreparedScript(
-    jsr_prepared_script preparedScript) noexcept {
+    prepared_script preparedScript) noexcept {
   CHECK_ARG(preparedScript);
   delete reinterpret_cast<NapiScriptModel *>(preparedScript);
   return napi_ok;
 }
 
 napi_status NapiEnvironment::runPreparedScript(
-    jsr_prepared_script preparedScript,
+    prepared_script preparedScript,
     napi_value *result) noexcept {
   CHECK_NAPI(checkPendingJSError());
   NapiHandleScope scope{*this, result};
@@ -7796,94 +7799,3 @@ NAPI_EXTERN napi_status hermes_create_napi_env(
   return napi_status::napi_ok;
 }
 
-//=============================================================================
-// Node-API extensions to host JS engine and to implement JSI
-//=============================================================================
-
-napi_status NAPI_CDECL jsr_env_ref(napi_env env) {
-  return CHECKED_ENV(env)->incRefCount();
-}
-
-napi_status NAPI_CDECL jsr_env_unref(napi_env env) {
-  return CHECKED_ENV(env)->decRefCount();
-}
-
-napi_status NAPI_CDECL jsr_collect_garbage(napi_env env) {
-  return CHECKED_ENV(env)->collectGarbage();
-}
-
-napi_status NAPI_CDECL
-jsr_has_unhandled_promise_rejection(napi_env env, bool *result) {
-  return CHECKED_ENV(env)->hasUnhandledPromiseRejection(result);
-}
-
-napi_status NAPI_CDECL jsr_get_and_clear_last_unhandled_promise_rejection(
-    napi_env env,
-    napi_value *result) {
-  return CHECKED_ENV(env)->getAndClearLastUnhandledPromiseRejection(result);
-}
-
-napi_status NAPI_CDECL jsr_get_description(napi_env env, const char **result) {
-  return CHECKED_ENV(env)->getDescription(result);
-}
-
-napi_status NAPI_CDECL
-jsr_drain_microtasks(napi_env env, int32_t max_count_hint, bool *result) {
-  return CHECKED_ENV(env)->drainMicrotasks(max_count_hint, result);
-}
-
-napi_status NAPI_CDECL jsr_is_inspectable(napi_env env, bool *result) {
-  return CHECKED_ENV(env)->isInspectable(result);
-}
-
-JSR_API jsr_open_napi_env_scope(napi_env env, jsr_napi_env_scope *scope) {
-  return CHECKED_ENV(env)->openEnvScope(scope);
-}
-
-JSR_API jsr_close_napi_env_scope(napi_env env, jsr_napi_env_scope scope) {
-  return CHECKED_ENV(env)->closeEnvScope(scope);
-}
-
-//-----------------------------------------------------------------------------
-// Script preparing and running.
-//
-// Script is usually converted to byte code, or in other words - prepared - for
-// execution. Then, we can run the prepared script.
-//-----------------------------------------------------------------------------
-
-napi_status NAPI_CDECL jsr_run_script(
-    napi_env env,
-    napi_value source,
-    const char *source_url,
-    napi_value *result) {
-  return CHECKED_ENV(env)->runScript(source, source_url, result);
-}
-
-napi_status NAPI_CDECL jsr_create_prepared_script(
-    napi_env env,
-    const uint8_t *script_data,
-    size_t script_length,
-    jsr_data_delete_cb script_delete_cb,
-    void *deleter_data,
-    const char *source_url,
-    jsr_prepared_script *result) {
-  return CHECKED_ENV(env)->createPreparedScript(
-      script_data,
-      script_length,
-      script_delete_cb,
-      deleter_data,
-      source_url,
-      result);
-}
-
-napi_status NAPI_CDECL
-jsr_delete_prepared_script(napi_env env, jsr_prepared_script prepared_script) {
-  return CHECKED_ENV(env)->deletePreparedScript(prepared_script);
-}
-
-napi_status NAPI_CDECL jsr_prepared_script_run(
-    napi_env env,
-    jsr_prepared_script prepared_script,
-    napi_value *result) {
-  return CHECKED_ENV(env)->runPreparedScript(prepared_script, result);
-}
