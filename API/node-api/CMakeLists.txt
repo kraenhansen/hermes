@@ -16,5 +16,5 @@ target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes)
 # add_library(hermesNapi INTERFACE)
 # target_include_directories(hermesNapi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# install(DIRECTORY "${PROJECT_SOURCE_DIR}/API/node-api/" DESTINATION include
-#  FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/API/node-api/" DESTINATION include
+  FILES_MATCHING PATTERN "*.h")
