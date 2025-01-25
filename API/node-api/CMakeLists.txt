@@ -11,7 +11,7 @@ add_library(libhermes-node-api
   MurmurHash.cpp
 )
 
-target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes)
+target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes hermesVMRuntime)
 
 # add_library(hermesNapi INTERFACE)
 # target_include_directories(hermesNapi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
