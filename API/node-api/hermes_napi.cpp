@@ -1560,10 +1560,6 @@ class NapiEnvironment final {
           int32_t id,
           vm::HermesValue error)) noexcept;
 
-  napi_status openEnvScope(jsr_napi_env_scope *scope) noexcept;
-
-  napi_status closeEnvScope(jsr_napi_env_scope scope) noexcept;
-
   // Exported function to check if there is an unhandled Promise rejection.
   napi_status hasUnhandledPromiseRejection(bool *result) noexcept;
 
@@ -6385,18 +6381,6 @@ NapiEnvironment::handleRejectionNotification(
 
   (*handler)(env, id, args.getArg(1));
   return env->getUndefined();
-}
-
-napi_status NapiEnvironment::openEnvScope(jsr_napi_env_scope *scope) noexcept {
-  CHECK_ARG(scope);
-  *scope = reinterpret_cast<jsr_napi_env_scope>(new int(0));
-  return napi_ok;
-}
-
-napi_status NapiEnvironment::closeEnvScope(jsr_napi_env_scope scope) noexcept {
-  CHECK_ARG(scope);
-  delete reinterpret_cast<int *>(scope);
-  return napi_ok;
 }
 
 napi_status NapiEnvironment::hasUnhandledPromiseRejection(
