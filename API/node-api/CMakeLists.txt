@@ -6,8 +6,15 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(hermesNapi INTERFACE)
-target_include_directories(hermesNapi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(libhermes-node-api
+  hermes_napi.cpp
+  MurmurHash.cpp
+)
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/API/node-api/" DESTINATION include
-  FILES_MATCHING PATTERN "*.h")
+target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes)
+
+# add_library(hermesNapi INTERFACE)
+# target_include_directories(hermesNapi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# install(DIRECTORY "${PROJECT_SOURCE_DIR}/API/node-api/" DESTINATION include
+#  FILES_MATCHING PATTERN "*.h")
