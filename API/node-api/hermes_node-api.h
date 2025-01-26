@@ -8,11 +8,12 @@
 #ifndef HERMES_HERMES_NODE_API_H
 #define HERMES_HERMES_NODE_API_H
 
+#include <jsi/jsi.h>
 #include "js_native_api.h"
 
 EXTERN_C_START
 
-// TODO: Declare a function to create a napi_env from a HermesRuntime
+NAPI_EXTERN napi_env jsi_create_napi_env(facebook::jsi::Runtime&);
 
 EXTERN_C_END
 
