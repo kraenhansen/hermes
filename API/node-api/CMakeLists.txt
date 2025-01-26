@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(libhermes-node-api
   hermes_napi.cpp
-  MurmurHash.cpp
 )
 
 target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes hermesVMRuntime)
