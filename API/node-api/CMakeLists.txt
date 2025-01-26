@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(libhermes-node-api
-  hermes_napi.cpp
+  hermes_node-api.cpp
 )
 
 target_link_libraries(libhermes-node-api PUBLIC jsi PRIVATE libhermes hermesVMRuntime)
