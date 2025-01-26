@@ -7696,3 +7696,16 @@ NAPI_EXTERN napi_status hermes_create_napi_env(
   return napi_status::napi_ok;
 }
 
+
+NAPI_EXTERN napi_status jsi_create_napi_env(facebook::jsi::Runtime& rt, napi_env *env) noexcept {
+  try {
+    auto& hermes_runtime = dynamic_cast<facebook::hermes::HermesRuntime&>(rt);
+    
+    *env = hermes::napi::napiEnv(new hermes::napi::NapiEnvironment(
+      hermes_runtime.getVMRuntimeUnsafe(), hermes_runtime.isInspectable()))
+    return napi_status::napi_ok;
+  } catch (const std::bad_cast& e) {
+    // TODO: Store the bad_cast exception as "last error"
+    return napi_status::napi_invalid_arg;
+  }
+}
