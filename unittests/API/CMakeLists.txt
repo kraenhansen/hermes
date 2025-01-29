@@ -64,3 +64,4 @@ target_link_libraries(APILeanTests libhermes_lean jsi)
 add_hermes_unittest(NodeAPITests NodeAPITest.cpp)
 # TODO: Should we link against libhermes_lean instead of libhermes?
 target_link_libraries(NodeAPITests libhermes jsi libhermes-node-api)
+target_include_directories(NodeAPITests PRIVATE ../../API/node-api)
