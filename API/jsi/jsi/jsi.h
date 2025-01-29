@@ -27,6 +27,9 @@
 #endif // _MSC_VER
 #endif // !defined(JSI_EXPORT)
 
+/// Node API environment, only relevant when the jsi::Runtime supports it
+typedef struct napi_env__ *napi_env;
+
 class FBJSRuntime;
 namespace facebook {
 namespace jsi {
@@ -266,6 +269,12 @@ class JSI_EXPORT Runtime {
   /// implementation of this function returns an \c Instrumentation instance
   /// which returns no metrics.
   virtual Instrumentation& instrumentation();
+
+  /// Creates a Node-API environment.
+  /// \throw a \c JSINativeException if the runtime does not support Node-API.
+  /// \param napi_env the output parameter used to store the newly created
+  /// Node-API environment.
+  virtual void createNodeApiEnv(napi_env *);
 
  protected:
   friend class Pointer;
@@ -1623,6 +1632,9 @@ class JSI_EXPORT JSError : public JSIException {
   std::string message_;
   std::string stack_;
 };
+
+/// Called by the default implementation of \c Runtime::createNodeApiEnv
+JSI_EXPORT void createNodeApiEnvFallback(napi_env *);
 
 } // namespace jsi
 } // namespace facebook
