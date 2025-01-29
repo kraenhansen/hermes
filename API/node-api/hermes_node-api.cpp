@@ -7683,29 +7683,21 @@ napi_status NAPI_CDECL napi_object_seal(napi_env env, napi_value object) {
 // Hermes specific API
 //=============================================================================
 
-NAPI_EXTERN napi_status hermes_create_napi_env(
-    ::hermes::vm::Runtime &runtime,
+namespace facebook {
+namespace hermes {
+
+void createNodeApiEnv(
+    HermesRuntime &runtime,
     bool isInspectable,
-    const ::hermes::vm::RuntimeConfig &runtimeConfig,
     napi_env *env) {
+  // The metadata aren't shared across static libraries, so we need to build first
+  ::hermes::vm::buildMetadataTable();
   if (!env) {
-    return napi_status::napi_invalid_arg;
+    throw std::invalid_argument("env must not be null");
   }
-  *env = hermes::napi::napiEnv(new hermes::napi::NapiEnvironment(
-      runtime, isInspectable, runtimeConfig));
-  return napi_status::napi_ok;
+  *env = ::hermes::napi::napiEnv(new ::hermes::napi::NapiEnvironment(
+      *runtime.getVMRuntimeUnsafe(), isInspectable));
 }
 
-
-NAPI_EXTERN napi_status jsi_create_napi_env(facebook::jsi::Runtime& rt, napi_env *env) noexcept {
-  try {
-    auto& hermes_runtime = dynamic_cast<facebook::hermes::HermesRuntime&>(rt);
-    
-    *env = hermes::napi::napiEnv(new hermes::napi::NapiEnvironment(
-      hermes_runtime.getVMRuntimeUnsafe(), hermes_runtime.isInspectable()))
-    return napi_status::napi_ok;
-  } catch (const std::bad_cast& e) {
-    // TODO: Store the bad_cast exception as "last error"
-    return napi_status::napi_invalid_arg;
-  }
-}
+} // namespace hermes
+} // namespace facebook

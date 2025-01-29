@@ -54,6 +54,7 @@
 #include <system_error>
 #include <unordered_map>
 
+#include <jsi/jsi.h>
 #include <jsi/instrumentation.h>
 #include <jsi/threadsafe.h>
 
@@ -62,6 +63,15 @@ extern "C" {
 int __llvm_profile_dump(void);
 }
 #endif
+
+
+#ifndef HERMES_WEAK
+#ifdef _MSC_VER
+#define HERMES_WEAK #pragma weak
+#else // _MSC_VER
+#define HERMES_WEAK __attribute__((weak))
+#endif // _MSC_VER
+#endif // !defined(HERMES_WEAK)
 
 // Android OSS has a bug where exception data can get mangled when going via
 // fbjni. This macro can be used to expose the root cause in adb log. It serves
@@ -584,6 +594,7 @@ class HermesRuntimeImpl final : public HermesRuntime,
   std::string description() override;
   bool isInspectable() override;
   jsi::Instrumentation &instrumentation() override;
+  void createNodeApiEnv(napi_env*) override;
 
   PointerValue *cloneSymbol(const Runtime::PointerValue *pv) override;
   PointerValue *cloneBigInt(const Runtime::PointerValue *pv) override;
@@ -2444,6 +2455,18 @@ void HermesRuntimeImpl::throwJSErrorWithMessage(Args &&...args) {
   // throwPendingError.
   (void)runtime_.raiseError(vm::TwineChar16(s));
   throwPendingError();
+}
+
+
+void HermesRuntimeImpl::createNodeApiEnv(napi_env* env) {
+  hermes::createNodeApiEnv(*this, this->isInspectable(), env);
+}
+
+HERMES_WEAK void createNodeApiEnv(
+    HermesRuntime &runtime,
+    bool isInspectable,
+    napi_env *env) {
+  throw jsi::JSINativeException("Node API is not supported in Hermes by default: Make sure you're including libhermes-node-api in your build.");
 }
 
 namespace {
