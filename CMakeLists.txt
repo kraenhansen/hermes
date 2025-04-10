@@ -721,7 +721,6 @@ if(HERMES_ENABLE_TEST_SUITE)
   endif()
 
   add_subdirectory(unittests)
-  add_subdirectory(node-api-tests)
 
   list(APPEND HERMES_TEST_DEPS
     HermesUnitTests
