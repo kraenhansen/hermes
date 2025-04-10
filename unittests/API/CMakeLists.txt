@@ -60,3 +60,8 @@ target_link_libraries(APITests hermesvm compileJS SegmentTestCompile traceInterp
 
 add_hermes_unittest(APILeanTests APILeanTest.cpp)
 target_link_libraries(APILeanTests hermesvmlean jsi)
+
+add_hermes_unittest(NodeAPITests NodeAPITest.cpp)
+# TODO: Should we link against hermesvmlean instead of libhermes?
+target_link_libraries(NodeAPITests libhermes jsi hermesNodeApi)
+target_include_directories(NodeAPITests PRIVATE ../../API/hermes_node_api/node_api)
