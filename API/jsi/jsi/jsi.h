@@ -380,6 +380,12 @@ class JSI_EXPORT Runtime : public ICast {
   /// data associated with the uuid, return a null pointer.
   std::shared_ptr<void> getRuntimeData(const UUID& uuid);
 
+  /// Creates a Node-API environment.
+  /// \throw a \c JSINativeException if the runtime does not support Node-API.
+  /// \param apiVersion the version of Node-API to use.
+  /// \return the newly created Node-API environment.
+  virtual void* createNodeApiEnv(int32_t apiVersion);
+
  protected:
   friend class Pointer;
   friend class PropNameID;
