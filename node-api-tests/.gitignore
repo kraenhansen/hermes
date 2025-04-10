@@ -1,0 +1,4 @@
+# These are files generated when configuring CMake
+js-native-api/**/CMakeLists.txt
+# Build directories are created by CMake
+js-native-api/**/build/
