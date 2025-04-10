@@ -16,12 +16,12 @@ using namespace facebook::jsi;
 
 namespace {
 
-TEST(NodeAPITest, CreateNodeApiEnv) {
+TEST(SimpleNodeAPITest, CreateNodeApiEnv) {
   auto rt = makeHermesRuntime();
   rt->createNodeApiEnv(8);
 }
 
-TEST(NodeAPITest, WriteAndReadInt64) {
+TEST(SimpleNodeAPITest, WriteAndReadInt64) {
   auto rt = makeHermesRuntime();
   napi_env env = static_cast<napi_env>(rt->createNodeApiEnv(8));
 

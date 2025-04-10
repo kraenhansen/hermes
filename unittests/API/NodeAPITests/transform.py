@@ -4,7 +4,7 @@ import json5 as json
 
 namespaced_target_names = []
 skipped_targets = [
-  "test_finalizer", # Uses NAPI_EXPERIMENTAL, which is not implemented
+  "node-api-tests-addon-test_finalizer-test_finalizer", # Uses NAPI_EXPERIMENTAL, which is not implemented
 ]
 
 def read_gyp_file(file_path):
@@ -42,13 +42,13 @@ def transform_gyp_file(file_path):
   # If validation passes, create an empty CMakeLists.txt file
   with open(cmake_file_path, "w") as cmake_file:
     for target in gyp["targets"]:
-      if target["target_name"] in skipped_targets:
-        print(f"Skipping target: {target['target_name']}")
-        continue
       target_name = target["target_name"]
       directory_name = os.path.basename(root)
       # Need the directory_name prefix to avoid name collisions
       namespace_target_name = f"node-api-tests-addon-{directory_name}-{target['target_name']}"
+      if namespace_target_name in skipped_targets:
+        print(f"Skipping target: {namespace_target_name}")
+        continue
       namespaced_target_names.append(namespace_target_name)
       sources = " ".join(target["sources"])
       cmake_file.write(f"add_library({namespace_target_name} SHARED {sources})\n")
