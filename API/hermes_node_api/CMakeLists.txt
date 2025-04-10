@@ -12,6 +12,10 @@ target_link_libraries(hermesNodeApi
   PUBLIC nodeApi
   PRIVATE hermesVMRuntime hermesParser
 )
+target_compile_definitions(hermesNodeApi
+  PRIVATE
+  NAPI_VERSION=10
+)
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
   # Same as above, but for windows. Note that there is no equivalent of -fvisibility=default.
