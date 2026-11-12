@@ -106,6 +106,7 @@ set(napi_test_sources
   NapiExternalTest.cpp
   NapiFunctionTest.cpp
   NapiHandleScopeTest.cpp
+  NapiHostReleaseTest.cpp
   NapiInstanceDataTest.cpp
   NapiModuleTest.cpp
   NapiNewInstanceTest.cpp

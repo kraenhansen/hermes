@@ -27,7 +27,8 @@ extern "C" {
 /// napi_generic_failure if the relevant callbacks are not provided.
 ///
 /// The host is responsible for the lifetime of this struct — it must
-/// outlive the napi_env that references it.
+/// outlive the napi_env that references it. A host that sets release
+/// is told when each env is done with it, and can free it then.
 struct hermes_napi_host {
   /// Schedule \p execute to run on a worker thread. When execute
   /// completes, schedule \p complete to run on the main (JS) thread.
@@ -102,6 +103,25 @@ struct hermes_napi_host {
   /// Release a long-lived loop reference previously taken by ref_loop.
   /// Optional; null only if ref_loop is also null.
   void (*unref_loop)(void *loop_data);
+
+  /// Called exactly once by each env created with this host, when the
+  /// env is destroyed during Runtime teardown, after its cleanup hooks
+  /// and finalizers have run. It is the env's last use of the host:
+  /// afterwards the env never reads this struct, calls any of its
+  /// callbacks, or passes \p data anywhere again, so the host may free
+  /// this struct and \p data from inside the call.
+  ///
+  /// Each env makes its own call, so a host shared by several envs can
+  /// count them to know when the last one is gone. Work the host has
+  /// already accepted through post_work or post_task is the host's to
+  /// finish or drop; the env does not wait for it.
+  ///
+  /// Not called for an env whose Runtime is never destroyed, or when
+  /// hermes_napi_create_env returns null.
+  ///
+  /// Optional — when null, the host must keep this struct alive until
+  /// the Runtime has been destroyed.
+  void (*release)(void *data);
 };
 
 typedef hermes_napi_host hermes_napi_event_loop;

@@ -455,7 +455,8 @@ struct napi_env__ {
   /// application. When non-null, enables async work APIs
   /// (napi_queue_async_work, napi_cancel_async_work) and thread-safe
   /// functions. When null, those APIs return napi_generic_failure.
-  /// Owned by the host; must outlive this env.
+  /// Owned by the host; must outlive this env. If the host sets
+  /// release, ~napi_env__ calls it as the env's last use of host_.
   hermes_napi_host *host_ = nullptr;
 
   /// Number of currently open callback scopes (for validation in

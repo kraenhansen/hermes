@@ -259,6 +259,13 @@ napi_env__::~napi_env__() {
   // deleter — both have already executed by the time we get here.
   // Member destructors release the remaining heap-allocated
   // structures.
+
+  // Tell the host this env is done with it. This must stay the env's
+  // last use of host_: the host may free the struct from inside the
+  // call.
+  if (host_ && host_->release) {
+    host_->release(host_->data);
+  }
 }
 
 napi_value napi_env__::addToCurrentScope(hermes::vm::HermesValue val) {
